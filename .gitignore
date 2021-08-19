@@ -1,0 +1,16 @@
+# artifacts
+*.exe
+outbound-checks
+target/
+
+# IDE files
+*.iml
+.idea
+.vscode
+
+
+# vendor
+vendor/
+
+# mac
+.DS_Store
