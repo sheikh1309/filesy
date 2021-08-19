@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-type ListResult struct {
+type listResult struct {
 	permission string
 	owner string
 	size string
@@ -50,11 +50,11 @@ func viewListOutput(output []byte)  {
 	// remove first line (total ...)
 	scanner.Scan()
 
-	var listResults []ListResult
+	var listResults []listResult
 	for scanner.Scan() {
 		text := scanner.Text()
 		words := strings.Fields(text)
-		listResult := ListResult {
+		row := listResult {
 			permission: words[0],
 			owner: words[2],
 			size: words[4],
@@ -62,7 +62,7 @@ func viewListOutput(output []byte)  {
 			lastModified: fmt.Sprintf("%v %v at %v", words[6], words[5], words[7]),
 			name: words[8],
 		}
-		listResults = append(listResults, listResult)
+		listResults = append(listResults, row)
 	}
 	var rows [][]string
 	for _, listResult := range listResults {
