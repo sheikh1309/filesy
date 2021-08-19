@@ -4,22 +4,18 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/sheikh1309/filesy/cmd/structs"
 	"github.com/sheikh1309/filesy/config"
 	"github.com/sheikh1309/filesy/ssh"
 	"github.com/sheikh1309/filesy/view"
 	"github.com/spf13/cobra"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 )
 
-type listResult struct {
-	permission string
-	owner string
-	size string
-	lastModified string
-	name string
-}
+var lsHeaders = []string{"Name", "Size", "Owner", "Permission", "Last Modified"}
 
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -40,42 +36,35 @@ func handleList(cmd *cobra.Command, args []string)  {
 	var credentials config.Credentials = config.GetCredentials(profile)
 	dir, _ := cmd.Flags().GetString("dir")
 	var output []byte = ssh.List(credentials, dir)
-	viewListOutput(output)
+	viewLsOutput(output)
 }
 
-func viewListOutput(output []byte)  {
+func viewLsOutput(output []byte)  {
 	var reader io.Reader = bytes.NewReader(output)
-
 	var scanner = bufio.NewScanner(reader)
-	// remove first line (total ...)
-	scanner.Scan()
-
-	var listResultsRows = getRows(scanner)
+	var listResultsRows = getLsRows(scanner)
 	var rows [][]string
 	for _, row := range listResultsRows {
-		rowData := []string{row.name, row.size, row.owner, row.permission, row.lastModified}
-		rows = append(rows, rowData)
+		rows = append(rows, row.Row())
 	}
-
-	headers := []string{"Name", "Size", "Owner", "Permission", "Last Modified"}
-
-	view.Table(headers, rows)
+	footer := []string{"", "", "", "Total", strconv.Itoa(len(rows))}
+	view.Table(lsHeaders, rows, footer)
 }
 
-func getRows(scanner *bufio.Scanner) []listResult {
-	var listResults []listResult
+func getLsRows(scanner *bufio.Scanner) []structs.LsRow {
+	var lsRows []structs.LsRow
 	for scanner.Scan() {
 		text := scanner.Text()
-		words := strings.Fields(text)
-		row := listResult {
-			permission: words[0],
-			owner: words[2],
-			size: words[4],
-			// Date => Day Month at h:m ->  3 Jul at 13:20
-			lastModified: fmt.Sprintf("%v %v at %v", words[6], words[5], words[7]),
-			name: words[8],
+		columns := strings.Fields(text)
+		date := fmt.Sprintf("%v %v at %v", columns[6], columns[5], columns[7])
+		row := structs.LsRow {
+			Permission: columns[0],
+			Owner: columns[2],
+			Size: columns[4],
+			LastModified: date, // Date => Day Month at h:m ->  3 Jul at 13:20
+			Name: columns[8],
 		}
-		listResults = append(listResults, row)
+		lsRows = append(lsRows, row)
 	}
-	return listResults
+	return lsRows
 }

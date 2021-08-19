@@ -3,13 +3,14 @@ package view
 import (
 	"github.com/olekukonko/tablewriter"
 	"os"
-	"strconv"
 )
 
-func Table(headers []string, rows [][]string)  {
+func Table(headers []string, rows [][]string, footer []string)  {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader(headers)
-	table.SetFooter([]string{"", "", "", "Total", strconv.Itoa(len(rows))})
+	table.SetFooter(footer)
 	table.AppendBulk(rows)
+	table.SetAutoMergeCellsByColumnIndex([]int{0})
+	table.SetRowLine(true)
 	table.Render()
 }
