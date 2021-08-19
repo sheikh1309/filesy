@@ -50,6 +50,19 @@ func viewListOutput(output []byte)  {
 	// remove first line (total ...)
 	scanner.Scan()
 
+	var listResultsRows = getRows(scanner)
+	var rows [][]string
+	for _, row := range listResultsRows {
+		rowData := []string{row.name, row.size, row.owner, row.permission, row.lastModified}
+		rows = append(rows, rowData)
+	}
+
+	headers := []string{"Name", "Size", "Owner", "Permission", "Last Modified"}
+
+	view.Table(headers, rows)
+}
+
+func getRows(scanner *bufio.Scanner) []listResult {
 	var listResults []listResult
 	for scanner.Scan() {
 		text := scanner.Text()
@@ -64,13 +77,5 @@ func viewListOutput(output []byte)  {
 		}
 		listResults = append(listResults, row)
 	}
-	var rows [][]string
-	for _, listResult := range listResults {
-		listResultData := []string{listResult.name, listResult.size, listResult.owner, listResult.permission, listResult.lastModified}
-		rows = append(rows, listResultData)
-	}
-
-	headers := []string{"Name", "Size", "Owner", "Permission", "Last Modified"}
-
-	view.Table(headers, rows)
+	return listResults
 }
