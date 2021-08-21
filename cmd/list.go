@@ -26,7 +26,6 @@ var listCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.PersistentFlags().StringP("name", "n", ".", "Dir name to list files")
 }
 
 func handleList(cmd *cobra.Command, args []string)  {

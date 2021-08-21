@@ -15,8 +15,9 @@ var dirCmd = &cobra.Command{
 func init() {
 	createCmd.AddCommand(dirCmd)
 	removeCmd.AddCommand(dirCmd)
-	dirCmd.PersistentFlags().StringP("name", "n", "", "Dir name")
+	moveCmd.AddCommand(dirCmd)
 	dirCmd.MarkPersistentFlagRequired("name")
+	dirCmd.MarkPersistentFlagRequired("recursive")
 }
 
 func handleDir(cmd *cobra.Command, args []string) {
@@ -26,8 +27,12 @@ func handleDir(cmd *cobra.Command, args []string) {
 		force, _ := cmd.Flags().GetBool("force")
 		recursive, _ := cmd.Flags().GetBool("recursive")
 		ssh.Remove(credentials, dir, force, recursive)
-	} else {
+	} else if cmd.Parent().Name() == createCmd.Name() {
 		ssh.CreateDir(credentials, dir)
+	} else if cmd.Parent().Name() == moveCmd.Name() {
+		source, _ := cmd.Flags().GetString("source")
+		dest, _ := cmd.Flags().GetString("dest")
+		ssh.Move(credentials, source, dest)
 	}
 	viewLs(credentials)
 }
