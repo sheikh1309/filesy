@@ -21,4 +21,6 @@ func handleDir(cmd *cobra.Command, args []string) {
 	var credentials = config.GetCredentials("my-server")
 	dir, _ := cmd.Flags().GetString("dir")
 	ssh.CreateDir(credentials, dir)
+	var output = ssh.List(credentials, "")
+	viewLsOutput(output)
 }

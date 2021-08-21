@@ -21,4 +21,6 @@ func handleFile(cmd *cobra.Command, args []string)  {
 	var credentials = config.GetCredentials("my-server")
 	filename, _ := cmd.Flags().GetString("filename")
 	ssh.CreateFile(credentials, filename)
+	var output = ssh.List(credentials, "")
+	viewLsOutput(output)
 }
