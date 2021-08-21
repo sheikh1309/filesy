@@ -26,7 +26,7 @@ var listCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.PersistentFlags().StringP("dir", "d", "~", "Dir name to list files")
+	listCmd.PersistentFlags().StringP("name", "n", ".", "Dir name to list files")
 }
 
 func handleList(cmd *cobra.Command, args []string)  {
@@ -35,7 +35,7 @@ func handleList(cmd *cobra.Command, args []string)  {
 		profile = "default"
 	}
 	var credentials = config.GetCredentials(profile)
-	dir, _ := cmd.Flags().GetString("dir")
+	dir, _ := cmd.Flags().GetString("name")
 	var output = ssh.List(credentials, dir)
 	viewLsOutput(output)
 }

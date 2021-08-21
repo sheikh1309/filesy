@@ -8,19 +8,23 @@ import (
 
 var fileCmd = &cobra.Command{
 	Use:   "file",
-	Short: "CRUD file",
+	Short: "Create/Remove File",
 	Run: handleFile,
 }
 
 func init() {
 	createCmd.AddCommand(fileCmd)
-	fileCmd.PersistentFlags().StringP("filename", "f", "~", "Dir name to list files")
+	removeCmd.AddCommand(fileCmd)
+	fileCmd.PersistentFlags().StringP("name", "n", "", "File name")
 }
 
-func handleFile(cmd *cobra.Command, args []string)  {
+func handleFile(cmd *cobra.Command, args []string) {
 	var credentials = config.GetCredentials("my-server")
-	filename, _ := cmd.Flags().GetString("filename")
-	ssh.CreateFile(credentials, filename)
-	var output = ssh.List(credentials, "")
-	viewLsOutput(output)
+	filename, _ := cmd.Flags().GetString("name")
+	if cmd.Parent().Name() == removeCmd.Name() {
+		ssh.Remove(credentials, filename, false, false)
+	} else {
+		ssh.CreateFile(credentials, filename)
+	}
+	viewLs(credentials)
 }
