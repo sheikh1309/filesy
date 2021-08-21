@@ -5,11 +5,18 @@ import (
 	"os"
 )
 
-func Table(headers []string, rows [][]string, footer []string)  {
+type Row struct {
+	Data []string
+	Colors []tablewriter.Colors
+}
+
+func Table(headers []string, rows []Row, footer []string)  {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader(headers)
 	table.SetFooter(footer)
-	table.AppendBulk(rows)
+	for _, row := range rows {
+		table.Rich(row.Data, row.Colors)
+	}
 	table.SetAutoMergeCellsByColumnIndex([]int{0})
 	table.SetRowLine(true)
 	table.Render()

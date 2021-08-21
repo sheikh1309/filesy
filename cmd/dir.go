@@ -14,9 +14,11 @@ var dirCmd = &cobra.Command{
 
 func init() {
 	createCmd.AddCommand(dirCmd)
+	dirCmd.PersistentFlags().StringP("dir", "d", "~", "Dir name to list files")
 }
 
 func handleDir(cmd *cobra.Command, args []string) {
-	var credentials config.Credentials = config.GetCredentials("my-server")
-	ssh.CreateDir(credentials)
+	var credentials = config.GetCredentials("my-server")
+	dir, _ := cmd.Flags().GetString("dir")
+	ssh.CreateDir(credentials, dir)
 }

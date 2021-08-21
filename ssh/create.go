@@ -1,16 +1,14 @@
 package ssh
 
 import (
-	"github.com/sheikh1309/filesy/config"
 	"fmt"
+	"github.com/sheikh1309/filesy/config"
 )
 
-func CreateFile(credentials config.Credentials)  {
-	// todo create file
-	fmt.Printf("CreateFile")
+func CreateFile(credentials config.Credentials, filename string)  {
+	run(credentials, fmt.Sprintf("touch %v", filename))
 }
 
-func CreateDir(credentials config.Credentials)  {
-	// todo create dir
-	fmt.Printf("CreateDir")
+func CreateDir(credentials config.Credentials, dir string)  {
+	run(credentials, fmt.Sprintf("mkdir %v", dir))
 }

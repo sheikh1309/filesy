@@ -14,9 +14,11 @@ var fileCmd = &cobra.Command{
 
 func init() {
 	createCmd.AddCommand(fileCmd)
+	fileCmd.PersistentFlags().StringP("filename", "f", "~", "Dir name to list files")
 }
 
 func handleFile(cmd *cobra.Command, args []string)  {
-	var credentials config.Credentials = config.GetCredentials("my-server")
-	ssh.CreateFile(credentials)
+	var credentials = config.GetCredentials("my-server")
+	filename, _ := cmd.Flags().GetString("filename")
+	ssh.CreateFile(credentials, filename)
 }

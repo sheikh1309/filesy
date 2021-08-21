@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sheikh1309/filesy/cmd/structs"
 	"github.com/sheikh1309/filesy/config"
 	"github.com/sheikh1309/filesy/ssh"
@@ -33,9 +34,9 @@ func handleList(cmd *cobra.Command, args []string)  {
 	if !exists {
 		profile = "default"
 	}
-	var credentials config.Credentials = config.GetCredentials(profile)
+	var credentials = config.GetCredentials(profile)
 	dir, _ := cmd.Flags().GetString("dir")
-	var output []byte = ssh.List(credentials, dir)
+	var output = ssh.List(credentials, dir)
 	viewLsOutput(output)
 }
 
@@ -43,28 +44,27 @@ func viewLsOutput(output []byte)  {
 	var reader io.Reader = bytes.NewReader(output)
 	var scanner = bufio.NewScanner(reader)
 	var listResultsRows = getLsRows(scanner)
-	var rows [][]string
-	for _, row := range listResultsRows {
-		rows = append(rows, row.Row())
-	}
-	footer := []string{"", "", "", "Total", strconv.Itoa(len(rows))}
-	view.Table(lsHeaders, rows, footer)
+	footer := []string{"", "", "", "Total", strconv.Itoa(len(listResultsRows))}
+	view.Table(lsHeaders, listResultsRows, footer)
 }
 
-func getLsRows(scanner *bufio.Scanner) []structs.LsRow {
-	var lsRows []structs.LsRow
+func getLsRows(scanner *bufio.Scanner) []view.Row {
+	var rows []view.Row
 	for scanner.Scan() {
 		text := scanner.Text()
 		columns := strings.Fields(text)
 		date := fmt.Sprintf("%v %v at %v", columns[6], columns[5], columns[7])
-		row := structs.LsRow {
-			Permission: columns[0],
-			Owner: columns[2],
-			Size: columns[4],
-			LastModified: date, // Date => Day Month at h:m ->  3 Jul at 13:20
-			Name: columns[8],
-		}
-		lsRows = append(lsRows, row)
+		data := structs.LsRow { Permission: columns[0], Owner: columns[2], Size: columns[4], LastModified: date, Name: columns[8] }
+		row := view.Row { Data: data.Row(), Colors: getListRowColor(data.Name), }
+		rows = append(rows, row)
 	}
-	return lsRows
+	return rows
+}
+
+func getListRowColor(name string) []tablewriter.Colors {
+	var colors = []tablewriter.Colors{tablewriter.Colors{}, tablewriter.Colors{}, tablewriter.Colors{}, tablewriter.Colors{}}
+	if strings.HasSuffix(name, "/") {
+		colors[0] = tablewriter.Colors{tablewriter.Bold, tablewriter.FgRedColor}
+	}
+	return colors
 }

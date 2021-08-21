@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sheikh1309/filesy/cmd/structs"
 	"github.com/sheikh1309/filesy/config"
 	"github.com/sheikh1309/filesy/ssh"
@@ -41,16 +42,12 @@ func handleTree(cmd *cobra.Command, args []string)  {
 func viewTreeOutput(output []byte)  {
 	var reader io.Reader = bytes.NewReader(output)
 	var scanner = bufio.NewScanner(reader)
-	var treeRows = getRows(scanner)
-	var rows [][]string
-	for _, row := range treeRows {
-		rows = append(rows, row.Row())
-	}
+	var rows = getRows(scanner)
 	footer := []string{"", "", "", "", "Total", strconv.Itoa(len(rows))}
 	view.Table(treeHeaders, rows, footer)
 }
 
-func getRows(scanner *bufio.Scanner) []structs.TreeRow {
+func getRows(scanner *bufio.Scanner) []view.Row {
 	var rows []string
 	var indexes []int
 	cnt := 0
@@ -79,24 +76,34 @@ func getTreeMap(rows []string, indexes []int) map[string][]string {
 	return treeParentMap
 }
 
-func getTreeRows(treeParentMap map[string][]string) []structs.TreeRow {
-	var treeRows []structs.TreeRow
+func getTreeRows(treeParentMap map[string][]string) []view.Row {
+	var viewRows []view.Row
 	for key, value := range treeParentMap {
 		for _, item := range value {
 			columns := strings.Fields(item)
 			date := fmt.Sprintf("%v %v at %v", columns[6], columns[5], columns[7])
-			row := structs.TreeRow{
+			data := structs.TreeRow{
 				Parent: key,
-				LsRow: structs.LsRow {
-					Permission: columns[0],
-					Owner: columns[2],
-					Size: columns[4],
-					LastModified: date,
-					Name: columns[8],
-				},
+				LsRow: structs.LsRow { Permission: columns[0], Owner: columns[2], Size: columns[4], LastModified: date, Name: columns[8] },
 			}
-			treeRows = append(treeRows, row)
+			row := view.Row { Data: data.Row(), Colors: getTreeRowColor(data.Name) }
+			viewRows = append(viewRows, row)
 		}
 	}
-	return treeRows
+	return viewRows
+}
+
+func getTreeRowColor(name string) []tablewriter.Colors {
+	var colors = []tablewriter.Colors{
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgRedColor},
+		tablewriter.Colors{},
+		tablewriter.Colors{},
+		tablewriter.Colors{},
+		tablewriter.Colors{},
+		tablewriter.Colors{},
+	}
+	if strings.HasSuffix(name, "/") {
+		colors[1] = tablewriter.Colors{tablewriter.Bold, tablewriter.FgBlueColor}
+	}
+	return colors
 }
