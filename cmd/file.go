@@ -8,7 +8,7 @@ import (
 
 var fileCmd = &cobra.Command{
 	Use:   "file",
-	Short: "Create/Remove File",
+	Short: "CRUD File",
 	Run: handleFile,
 }
 
@@ -16,6 +16,7 @@ func init() {
 	createCmd.AddCommand(fileCmd)
 	removeCmd.AddCommand(fileCmd)
 	moveCmd.AddCommand(fileCmd)
+	copyCmd.AddCommand(fileCmd)
 }
 
 func handleFile(cmd *cobra.Command, args []string) {
@@ -29,6 +30,10 @@ func handleFile(cmd *cobra.Command, args []string) {
 		source, _ := cmd.Flags().GetString("source")
 		dest, _ := cmd.Flags().GetString("dest")
 		ssh.Move(credentials, source, dest)
+	} else if cmd.Parent().Name() == copyCmd.Name() {
+		source, _ := cmd.Flags().GetString("source")
+		dest, _ := cmd.Flags().GetString("dest")
+		ssh.Copy(credentials, source, dest, false)
 	}
 	viewLs(credentials)
 }
